@@ -209,7 +209,6 @@ square_result find_magic(int sq, int m, int bishop)
         fail = 1;
     }
 
-    // Calculate the shift value (64 - used_bits)
     int shift = 64 - n;
 
     r = (square_result){magic, shift};
