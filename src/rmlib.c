@@ -179,6 +179,29 @@ int transform(uint64 b, uint64 magic, int bits)
 #endif
 }
 
+uint64 surrounding(int square) {
+    int rank = square / 8;
+    int file = square % 8;
+
+    uint64 result = 0ULL;
+
+    for (int dr = -1; dr <= 1; dr++) {
+        for (int df = -1; df <= 1; df++) {
+            if (dr == 0 && df == 0)
+                continue;
+
+            int r = rank + dr;
+            int f = file + df;
+
+            if (r >= 0 && r < 8 && f >= 0 && f < 8) {
+                result |= 1ULL << (r * 8 + f);
+            }
+        }
+    }
+
+    return result;
+}
+
 square_result find_magic(int sq, int m, int bishop)
 {
   square_result r;
@@ -209,7 +232,9 @@ square_result find_magic(int sq, int m, int bishop)
         fail = 1;
     }
 
-    int shift = 64 - n;
+    int use = count_1s(mask & ~surrounding(sq));
+
+    int shift = 64 - use;
 
     r = (square_result){magic, shift};
 
