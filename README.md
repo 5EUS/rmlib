@@ -1,4 +1,4 @@
-# Magic Bitboard Generator
+# rmlib
 
 This is an independent C program for generating magic numbers and shift values used in **magic bitboard move generation**, based on an algorithm originally devised by **Tord Romstad**, one of the creators of [Stockfish](https://stockfishchess.org/).
 
