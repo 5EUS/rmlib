@@ -265,7 +265,7 @@ int BBits[64] = {
     5, 5, 5, 5, 5, 5, 5, 5,
     6, 5, 5, 5, 5, 5, 5, 6};
 
-DLL_EXPORT result GetMagics()
+DLL_EXPORT result GetMagics(int debug)
 {
   int square;
   result final;
@@ -273,7 +273,11 @@ DLL_EXPORT result GetMagics()
   {
     final.rook[square] = find_magic(square, RBits[square], 0);
     final.bishop[square] = find_magic(square, BBits[square], 1);
-    // printf("  0x%llxULL >> %d,\n", r.magic, r.shift);
+    if (debug)
+    {
+      printf("rook at %d 0x%llxULL >> %d,\n", square, final.rook->magic, final.rook->shift);
+      printf("bishop at %d 0x%llxULL >> %d,\n", square, final.bishop->magic, final.bishop->shift);
+    }
   } 
   return final;
 }

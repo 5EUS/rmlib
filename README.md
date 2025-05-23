@@ -48,7 +48,7 @@ typedef struct result
   square_result bishop[64];
 } result;
 
-EXPORT result GetMagics(void);
+EXPORT result GetMagics(int debug);
 ```
 
 ## C# Usage Example
@@ -71,7 +71,7 @@ public struct Result
 }
 
 [DllImport("rmlib.so", EntryPoint = "GetMagics", CallingConvention = CallingConvention.Cdecl)]
-public static extern Result GetMagics();
+public static extern Result GetMagics(int debug);
 ```
 
 ## Further Reading
