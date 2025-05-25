@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 // #define USE_32_BIT_MULTIPLICATIONS
 
@@ -262,8 +263,8 @@ DLL_EXPORT result GetMagics(int debug)
     final.bishop[square] = find_magic(square, BBits[square], 1);
     if (debug)
     {
-      printf("rook at %d 0x%llxULL,\n", square, final.rook[square]);
-      printf("bishop at %d 0x%llxULL,\n", square, final.bishop[square]);
+      printf("rook at %d 0x%lxULL,\n", square, final.rook[square]);
+      printf("bishop at %d 0x%lxULL,\n", square, final.bishop[square]);
     }
   } 
   return final;
@@ -285,8 +286,8 @@ int main()
   for (square = 0; square < 64; square++)
   {
     ulong r = find_magic(square, RBits[square], 0);
-    printf("  0x%llxULL,\n", r);
-    fprintf(rooks, "%llx\n", r);
+    printf("  0x%lxULL,\n", r);
+    fprintf(rooks, "%lx\n", r);
   }
   printf("};\n\n");
 
@@ -294,8 +295,8 @@ int main()
   for (square = 0; square < 64; square++)
   {
     ulong r = find_magic(square, BBits[square], 1);
-    printf("  0x%llxULL,\n", r);
-    fprintf(bishops, "%llx\n", r);
+    printf("  0x%lxULL,\n", r);
+    fprintf(bishops, "%lx\n", r);
   }
   printf("};\n\n");
 
