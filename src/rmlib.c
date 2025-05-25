@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define USE_32_BIT_MULTIPLICATIONS
+// #define USE_32_BIT_MULTIPLICATIONS
 
 #ifdef _WIN32
 #define DLL_EXPORT __declspec(dllexport)
@@ -14,36 +14,30 @@
 #define DLL_EXPORT __attribute__((visibility("default")))
 #endif
 
-typedef unsigned long long uint64;
-
-typedef struct square_result
-{
-  uint64 magic;
-  int shift;
-} square_result;
+typedef u_int64_t ulong;
 
 typedef struct result
 {
-  square_result rook[64];
-  square_result bishop[64];
+  ulong rook[64];
+  ulong bishop[64];
 } result;
 
-uint64 random_uint64()
+ulong random_uint64()
 {
-  uint64 u1, u2, u3, u4;
-  u1 = (uint64)(random()) & 0xFFFF;
-  u2 = (uint64)(random()) & 0xFFFF;
-  u3 = (uint64)(random()) & 0xFFFF;
-  u4 = (uint64)(random()) & 0xFFFF;
+  ulong u1, u2, u3, u4;
+  u1 = (ulong)(random()) & 0xFFFF;
+  u2 = (ulong)(random()) & 0xFFFF;
+  u3 = (ulong)(random()) & 0xFFFF;
+  u4 = (ulong)(random()) & 0xFFFF;
   return u1 | (u2 << 16) | (u3 << 32) | (u4 << 48);
 }
 
-uint64 random_uint64_fewbits()
+ulong random_uint64_fewbits()
 {
   return random_uint64() & random_uint64() & random_uint64();
 }
 
-int count_1s(uint64 b)
+DLL_EXPORT int count_1s(ulong b)
 {
   int r;
   for (r = 0; b; r++, b &= b - 1)
@@ -57,18 +51,18 @@ const int BitTable[64] = {
     26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
     58, 20, 37, 17, 36, 8};
 
-int pop_1st_bit(uint64 *bb)
+int pop_1st_bit(ulong *bb)
 {
-  uint64 b = *bb ^ (*bb - 1);
+  ulong b = *bb ^ (*bb - 1);
   unsigned int fold = (unsigned)((b & 0xffffffff) ^ (b >> 32));
   *bb &= (*bb - 1);
   return BitTable[(fold * 0x783a9b23) >> 26];
 }
 
-uint64 index_to_uint64(int index, int bits, uint64 m)
+DLL_EXPORT ulong index_to_ulong(int index, int bits, ulong m)
 {
   int i, j;
-  uint64 result = 0ULL;
+  ulong result = 0ULL;
   for (i = 0; i < bits; i++)
   {
     j = pop_1st_bit(&m);
@@ -78,9 +72,9 @@ uint64 index_to_uint64(int index, int bits, uint64 m)
   return result;
 }
 
-uint64 rmask(int sq)
+DLL_EXPORT ulong rmask(int sq)
 {
-  uint64 result = 0ULL;
+  ulong result = 0ULL;
   int rk = sq / 8, fl = sq % 8, r, f;
   for (r = rk + 1; r <= 6; r++)
     result |= (1ULL << (fl + r * 8));
@@ -93,9 +87,9 @@ uint64 rmask(int sq)
   return result;
 }
 
-uint64 bmask(int sq)
+DLL_EXPORT ulong bmask(int sq)
 {
-  uint64 result = 0ULL;
+  ulong result = 0ULL;
   int rk = sq / 8, fl = sq % 8, r, f;
   for (r = rk + 1, f = fl + 1; r <= 6 && f <= 6; r++, f++)
     result |= (1ULL << (f + r * 8));
@@ -108,9 +102,9 @@ uint64 bmask(int sq)
   return result;
 }
 
-uint64 ratt(int sq, uint64 block)
+DLL_EXPORT ulong ratt(int sq, ulong block)
 {
-  uint64 result = 0ULL;
+  ulong result = 0ULL;
   int rk = sq / 8, fl = sq % 8, r, f;
   for (r = rk + 1; r <= 7; r++)
   {
@@ -139,9 +133,9 @@ uint64 ratt(int sq, uint64 block)
   return result;
 }
 
-uint64 batt(int sq, uint64 block)
+DLL_EXPORT ulong batt(int sq, ulong block)
 {
-  uint64 result = 0ULL;
+  ulong result = 0ULL;
   int rk = sq / 8, fl = sq % 8, r, f;
   for (r = rk + 1, f = fl + 1; r <= 7 && f <= 7; r++, f++)
   {
@@ -170,7 +164,7 @@ uint64 batt(int sq, uint64 block)
   return result;
 }
 
-int transform(uint64 b, uint64 magic, int bits)
+DLL_EXPORT int transform(ulong b, ulong magic, int bits)
 {
 #if defined(USE_32_BIT_MULTIPLICATIONS)
   return (unsigned)((int)b * (int)magic ^ (int)(b >> 32) * (int)(magic >> 32)) >> (32 - bits);
@@ -179,11 +173,11 @@ int transform(uint64 b, uint64 magic, int bits)
 #endif
 }
 
-uint64 surrounding(int square) {
+DLL_EXPORT ulong surrounding(int square) {
     int rank = square / 8;
     int file = square % 8;
 
-    uint64 result = 0ULL;
+    ulong result = 0ULL;
 
     for (int dr = -1; dr <= 1; dr++) {
         for (int df = -1; df <= 1; df++) {
@@ -202,10 +196,9 @@ uint64 surrounding(int square) {
     return result;
 }
 
-square_result find_magic(int sq, int m, int bishop)
+ulong find_magic(int sq, int m, int bishop)
 {
-  square_result r;
-  uint64 mask, b[4096], a[4096], used[4096], magic;
+  ulong mask, b[4096], a[4096], used[4096], magic;
   int i, j, k, n, fail;
 
   mask = bishop ? bmask(sq) : rmask(sq);
@@ -213,7 +206,7 @@ square_result find_magic(int sq, int m, int bishop)
 
   for (i = 0; i < (1 << n); i++)
   {
-    b[i] = index_to_uint64(i, n, mask);
+    b[i] = index_to_ulong(i, n, mask);
     a[i] = bishop ? batt(sq, b[i]) : ratt(sq, b[i]);
   }
   for (k = 0; k < 100000000; k++)
@@ -232,17 +225,11 @@ square_result find_magic(int sq, int m, int bishop)
         fail = 1;
     }
 
-    int use = count_1s(mask & ~surrounding(sq));
-
-    int shift = 64 - use;
-
-    r = (square_result){magic, shift};
-
     if (!fail)
-      return r;
+      return magic;
   }
   printf("***Failed***\n");
-  return r;
+  return 0ULL;
 }
 
 int RBits[64] = {
@@ -275,8 +262,8 @@ DLL_EXPORT result GetMagics(int debug)
     final.bishop[square] = find_magic(square, BBits[square], 1);
     if (debug)
     {
-      printf("rook at %d 0x%llxULL >> %d,\n", square, final.rook->magic, final.rook->shift);
-      printf("bishop at %d 0x%llxULL >> %d,\n", square, final.bishop->magic, final.bishop->shift);
+      printf("rook at %d 0x%llxULL,\n", square, final.rook[square]);
+      printf("bishop at %d 0x%llxULL,\n", square, final.bishop[square]);
     }
   } 
   return final;
@@ -287,10 +274,8 @@ int main()
   int square;
 
   FILE *rooks = fopen("rook_magics.bin", "wb");
-  FILE *rookshifts = fopen("rook_shifts.bin", "wb");
   FILE *bishops = fopen("bishop_magics.bin", "wb");
-  FILE *bishopshifts = fopen("bishop_shifts.bin", "wb");
-  if (!rooks || !bishops || !rookshifts || !bishopshifts)
+  if (!rooks || !bishops)
   {
     perror("Failed to open output files");
     return 1;
@@ -299,20 +284,18 @@ int main()
   printf("const uint64 RMagic[64] = {\n");
   for (square = 0; square < 64; square++)
   {
-    square_result r = find_magic(square, RBits[square], 0);
-    printf("  0x%llxULL >> %d,\n", r.magic, r.shift);
-    fprintf(rooks, "%llx\n", r.magic);
-    fprintf(rookshifts, "%d\n", r.shift);
+    ulong r = find_magic(square, RBits[square], 0);
+    printf("  0x%llxULL,\n", r);
+    fprintf(rooks, "%llx\n", r);
   }
   printf("};\n\n");
 
   printf("const uint64 BMagic[64] = {\n");
   for (square = 0; square < 64; square++)
   {
-    square_result r = find_magic(square, BBits[square], 1);
-    printf("  0x%llxULL >> %d,\n", r.magic, r.shift);
-    fprintf(bishops, "%llx\n", r.magic);
-    fprintf(bishopshifts, "%d\n", r.shift);
+    ulong r = find_magic(square, BBits[square], 1);
+    printf("  0x%llxULL,\n", r);
+    fprintf(bishops, "%llx\n", r);
   }
   printf("};\n\n");
 
